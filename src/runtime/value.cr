@@ -119,7 +119,28 @@ struct Crinja::Value
   # its size.
   def size : Int
     if (object = @raw).responds_to?(:size)
-      object.size
+      case object
+      when Array(Crinja::Value)
+        object.size
+      when Crinja::Function::Cycler
+        object.size
+      when Crinja::SafeString
+        object.size
+      when Crinja::Tuple
+        object.size
+      when Crinja::Undefined
+        object.size
+      when Hash(Crinja::Value, Crinja::Value)
+        object.size
+      when Value::Iterator
+        object.size
+      when ::Iterator(Crinja::Value)
+        object.size
+      when String
+        object.size
+      else
+        raise ""
+      end
     else
       raise TypeError.new(self, "#{object.class} does not respond to #size")
     end
@@ -251,7 +272,7 @@ struct Crinja::Value
 
   # Assumes the underlying value is an `Iterable` and yields each
   # of the elements or key/values, always as `Value`.
-  def each
+  def each(& : Value -> _)
     raw_each do |raw|
       yield Value.new raw
     end
